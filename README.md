@@ -1,19 +1,6 @@
-# PupilOptixLab
+## PupilOptixLab
 
-PupilOptixLab is a lightweight real-time ray tracing framework based on OptiX7 which is designed for rapid implementation of ray tracing algorithms on GPU.
-
-Some ray tracing methods will be implemented in [PupilRay](https://github.com/mchenwang/PupilRay).
-
-## Features
-
-- mistuba3-style scenes format
-- pt with mis
-- OptiX7 denoiser
-- material: diffuse, conductor, rough conductor, dielectric, rough dielectric, plastic, rough plastic
-- asynchronous GUI thread
-- support native cuda code
-- camera interaction (mouse dragging \ keyboard moving with WASDQR)
-- [wavefront path tracer](https://github.com/mchenwang/WavefrontPathTracer): about 3x performance improvement
+This framework is originally developed by [mchenwang](https://github.com/mchenwang) for his research on ray tracing algorithms on GPU with Optix7, the original code is hosted on [PupilOptixLab](https://github.com/mchenwang/PupilOptixLab).
 
 ## Prerequisites
 
@@ -23,7 +10,39 @@ Some ray tracing methods will be implemented in [PupilRay](https://github.com/mc
 - CUDA 12.0+ (tested on 12.1)
 - OptiX 7.5 (for the built-in sphere intersection and higher versions are currently not supported due to APIs changes)
 
-## screenshot
+## File Structure
 
-![](https://github.com/mchenwang/PupilOptixLab/raw/main/image/PupilOptixLab.jpg)
+```
+example/
+│── path_tracer_glass_gbuffer/
+│   ├── main.cpp            <--set dataset path here
+│   ├── ...
+├── data/
+│   ├── static/
+│   │   ├── <dataset>/
+│   │   │   ├── xmls/       <--put xmls here
+│   │   │   │   ├0001.xml
+│   │   │   │   ├0002.xml
+│   │   │   │   ├...
+│   │   │   ├── gbuffers/   <--outputs
+│   │   │   │   ├0001_normal.exr
+│   │   │   │   ├0001_reflect_direction.exr
+│   │   │   │   ├0001_reflect_position.exr
+│   │   │   │   ├0001_refract_direction.exr
+│   │   │   │   ├0001_refract_position.exr
+│   │   │   │   ├0002_normal.exr
+│   │   │   │   ├...
+│   │   ├── meshes/ 
+│   │   │   ├── <dataset>.ply <--put models here
+```
 
+## Usage
+First use cmake to generate the project files, then compile the project *path_tracer_glass_gbuffer* in the *example* directory.  
+![ProjectStructure](image/projects.png)
+
+In the *main.cpp* file, set the dataset path to the directory containing the xmls and models.
+```
+std::filesystem::path root_folder_path = "../../../data/static/dolphin32";  //write your dataset path
+```
+
+Then run the project and the results will be saved in the *gbuffers* directory.
