@@ -3,7 +3,6 @@ test/
 target/
 .vscode/
 *.ptx
-data/*
-!data/static/*
+*gbuffers
 imgui.ini
 framework/static.h
