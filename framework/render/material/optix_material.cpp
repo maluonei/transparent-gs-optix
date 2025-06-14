@@ -117,6 +117,16 @@ MATERIAL_LOAD_FUNC(RoughPlastic) {
     return ret;
 }
 
+MATERIAL_LOAD_FUNC(Refraction) {
+    Pupil::optix::material::Refraction ret;
+    auto tex_mngr = util::Singleton<cuda::CudaTextureManager>::instance();
+    ret.int_ior = mat.int_ior;
+    ret.ext_ior = mat.ext_ior;
+    ret.base_color_texture = tex_mngr->GetCudaTexture(mat.base_color_texture);
+    //ret.specular_transmittance = tex_mngr->GetCudaTexture(mat.specular_transmittance);
+    return ret;
+}
+
 namespace Pupil::optix::material {
 void Material::LoadMaterial(Pupil::resource::Material mat) noexcept {
     type = mat.type;

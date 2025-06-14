@@ -29,6 +29,7 @@ struct BsdfSamplingRecord {
     float3 wo;
     float3 f = make_float3(0.f);
     float pdf = 0.f;
+    float fresnel = 0.f;
 
     cuda::Random *sampler = nullptr;
 
@@ -50,3 +51,4 @@ CUDA_INLINE CUDA_HOSTDEVICE bool operator&(EBsdfLobeType target, EBsdfLobeType t
 #include "rough_conductor.h"
 #include "plastic.h"
 #include "rough_plastic.h"
+#include "refraction.h"

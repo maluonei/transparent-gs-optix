@@ -37,6 +37,8 @@ struct Object {
     Object(std::string_view obj_name, std::string_view type, ETag obj_tag = ETag::_unknown) noexcept
         : obj_name(obj_name), type(type), tag(obj_tag) {}
 
+    bool HasAttribute(std::string view) const noexcept;
+
     std::string GetProperty(std::string_view) const noexcept;
     Object *GetUniqueSubObject(std::string_view) const noexcept;
     std::vector<Object *> GetSubObjects(std::string_view) const noexcept;

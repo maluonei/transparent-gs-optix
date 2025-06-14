@@ -16,4 +16,9 @@ void Pass::Inspector() noexcept {
     ImGui::Checkbox("enalbe", &m_enable);
     ImGui::Text("time cost: %.3lf ms", m_last_exec_time);
 }
+
+void Pass::SaveFrame(const std::filesystem::path &path, const std::string& filename) noexcept {
+
+}
+
 }// namespace Pupil

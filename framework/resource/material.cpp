@@ -147,6 +147,21 @@ struct MaterialLoader<EMatType::RoughPlastic> {
 };
 
 template<>
+struct MaterialLoader<EMatType::Refraction> {
+    Material operator()(const resource::xml::Object *obj, resource::Scene *scene) {
+        Material mat{};
+        mat.type = EMatType::Refraction;
+        std::string value = obj->GetProperty("int_ior");
+        mat.refraction.int_ior = material::LoadDielectricIor(value, 1.45f);
+        value = obj->GetProperty("ext_ior");
+        mat.refraction.ext_ior = material::LoadDielectricIor(value, 1.00f);
+        //resource::xml::LoadTextureOrRGB(obj, scene, "specular_reflectance", mat.dielectric.specular_reflectance, { 1.f });
+        resource::xml::LoadTextureOrRGB(obj, scene, "base_color_texture", mat.refraction.base_color_texture, { 1.f });
+        return mat;
+    }
+};
+
+template<>
 struct MaterialLoader<EMatType::Twosided> {
     Material operator()(const resource::xml::Object *obj, resource::Scene *scene) {
         Material mat = LoadMaterialFromXml(obj->GetUniqueSubObject("bsdf"), scene);

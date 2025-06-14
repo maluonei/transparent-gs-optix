@@ -32,8 +32,11 @@ public:
     void Init() noexcept;
     void Destroy() noexcept;
 
+    bool LoadSensor(std::filesystem::path) noexcept;
+    bool LoadSensor(resource::Scene *) noexcept;
     bool LoadScene(std::filesystem::path) noexcept;
     bool LoadScene(resource::Scene *) noexcept;
+    bool ReSetCamera(std::filesystem::path) noexcept;
 
     OptixTraversableHandle GetIASHandle(unsigned int gas_offset = 2, bool allow_update = false) noexcept;
 

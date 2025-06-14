@@ -24,6 +24,38 @@ void Scene::Reset() noexcept {
     sensor = Sensor{};
 }
 
+bool Scene::LoadSensorFromXML(std::filesystem::path file) noexcept {
+    sensor = Sensor{};
+
+    scene_root_path = file.parent_path().make_preferred();
+
+    xml::Parser parser;
+    auto scene_xml_root_obj = parser.LoadFromFile(file);
+    for (auto &xml_obj : scene_xml_root_obj->sub_object) {
+        switch (xml_obj->tag) {
+            case xml::ETag::_sensor:
+                LoadXmlObj(xml_obj, &sensor);
+                break;
+        }
+    }
+    return true;
+}
+
+bool Scene::LoadCameraFromXML(std::filesystem::path file, float *translation, float *rotation, float *scale) noexcept {
+    scene_root_path = file.parent_path().make_preferred();
+
+    xml::Parser parser;
+    auto scene_xml_root_obj = parser.LoadFromFile(file);
+    for (auto &xml_obj : scene_xml_root_obj->sub_object) {
+        switch (xml_obj->tag) {
+            case xml::ETag::_sensor:
+                LoadXmlCamera(xml_obj, &sensor, translation, rotation, scale);
+                break;
+        }
+    }
+    return true;
+}
+
 bool Scene::LoadFromXML(std::filesystem::path file) noexcept {
     Reset();
     scene_root_path = file.parent_path().make_preferred();
@@ -221,6 +253,19 @@ void Scene::LoadXmlObj(const xml::Object *xml_obj, void *dst) noexcept {
             } else {
                 Pupil::Log::Warn("unknown emitter type [{}].", xml_obj->type);
             }
+        } break;
+    }
+}
+void Scene::LoadXmlCamera(const xml::Object *xml_obj, void *dst, float *translation, float *rotation, float *scale) noexcept {
+    if (xml_obj == nullptr || dst == nullptr) return;
+
+    switch (xml_obj->tag) {
+        case xml::ETag::_sensor: {
+            auto transform_obj = xml_obj->GetUniqueSubObject("transform");
+            LoadXmlCamera(transform_obj, dst, translation, rotation, scale);
+        } break;
+        case xml::ETag::_transform: {
+            xml::LoadTransform(xml_obj, dst, translation, rotation, scale);
         } break;
     }
 }

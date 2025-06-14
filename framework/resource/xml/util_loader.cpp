@@ -169,21 +169,56 @@ bool LoadTransform3D(const resource::xml::Object *obj, util::Transform *transfor
                 Pupil::Log::Warn("transform scale/rotate/translate is ignored as look_at exists.");
             }
             return true;
-        }
+        } 
+
+        //float _scale[3] = { 1.f, 1.f, 1.f };
+        //float _rotate[3] = { 0.f, 0.f, 0.f };
+        //float _translation[3] = { 0.f, 0.f, 0.f };
+
+        //if (util::Float3 scale; LoadFloat3(obj, "scale", scale)) {
+        //    _scale[0] = scale.x;
+        //    _scale[1] = scale.y;
+        //    _scale[2] = scale.z;
+        //}
+        //
+        //
+        //if (auto rotate_objs = obj->GetSubObjects("rotate"); rotate_objs.size() > 0) {
+        //    for (auto &rotate_obj : rotate_objs) {
+        //        if (util::Float3 axis; Load3Float(rotate_obj, "axis", axis)) {
+        //            if (float angle; LoadFloat(rotate_obj, "angle", angle)) {
+        //                if (axis.x == 1.f && axis.y == 0.f && axis.z == 0.f) {
+        //                    _rotate[0] = angle;
+        //                } else if (axis.x == 0.f && axis.y == 1.f && axis.z == 0.f) {
+        //                    _rotate[1] = angle;
+        //                } else if (axis.x == 0.f && axis.y == 0.f && axis.z == 1.f) {
+        //                    _rotate[2] = angle;
+        //                }
+        //                //transform->Rotate(axis.x, axis.y, axis.z, angle);
+        //            }
+        //        }
+        //    }
+        //}
+        //
+        //if (util::Float3 translate; Load3Float(obj, "translate", translate)) {
+        //    _translation[0] = translate.x;
+        //    _translation[1] = translate.y;
+        //    _translation[2] = translate.z;
+        //}
 
         if (util::Float3 scale; LoadFloat3(obj, "scale", scale)) {
             transform->Scale(scale.x, scale.y, scale.z);
         }
-
-        auto rotate_obj = obj->GetUniqueSubObject("rotate");
-        if (rotate_obj) {
-            if (util::Float3 axis; Load3Float(rotate_obj, "axis", axis)) {
-                if (float angle; LoadFloat(rotate_obj, "angle", angle)) {
-                    transform->Rotate(axis.x, axis.y, axis.z, angle);
+        
+        if (auto rotate_objs = obj->GetSubObjects("rotate"); rotate_objs.size() > 0) {
+            for (auto &rotate_obj : rotate_objs) {
+                if (util::Float3 axis; Load3Float(rotate_obj, "axis", axis)) {
+                    if (float angle; LoadFloat(rotate_obj, "angle", angle)) {
+                        transform->Rotate(axis.x, axis.y, axis.z, angle);
+                    }
                 }
             }
         }
-
+        
         if (util::Float3 translate; Load3Float(obj, "translate", translate)) {
             transform->Translate(translate.x, translate.y, translate.z);
         }
@@ -207,5 +242,42 @@ bool LoadTransform(const resource::xml::Object *obj, void *dst) noexcept {
         Pupil::Log::Warn("transform [{}] UNKNOWN.", obj->var_name);
     }
     return false;
+}
+
+bool LoadTransform(const resource::xml::Object *obj, void *dst, float *_translation, float *_rotate, float *_scale) noexcept {
+    //float _scale[3] = { 1.f, 1.f, 1.f };
+    //float _rotate[3] = { 0.f, 0.f, 0.f };
+    //float _translation[3] = { 0.f, 0.f, 0.f };
+
+    if (util::Float3 scale; LoadFloat3(obj, "scale", scale)) {
+        _scale[0] = scale.x;
+        _scale[1] = scale.y;
+        _scale[2] = scale.z;
+    }
+
+    if (auto rotate_objs = obj->GetSubObjects("rotate"); rotate_objs.size() > 0) {
+        for (auto &rotate_obj : rotate_objs) {
+            if (util::Float3 axis; Load3Float(rotate_obj, "axis", axis)) {
+                if (float angle; LoadFloat(rotate_obj, "angle", angle)) {
+                    if (axis.x == 1.f && axis.y == 0.f && axis.z == 0.f) {
+                        _rotate[0] = angle;
+                    } else if (axis.x == 0.f && axis.y == 1.f && axis.z == 0.f) {
+                        _rotate[1] = angle;
+                    } else if (axis.x == 0.f && axis.y == 0.f && axis.z == 1.f) {
+                        _rotate[2] = angle;
+                    }
+                    //transform->Rotate(axis.x, axis.y, axis.z, angle);
+                }
+            }
+        }
+    }
+
+    if (util::Float3 translate; Load3Float(obj, "translate", translate)) {
+        _translation[0] = translate.x;
+        _translation[1] = translate.y;
+        _translation[2] = translate.z;
+    }
+
+    return true;
 }
 }// namespace Pupil::resource::xml

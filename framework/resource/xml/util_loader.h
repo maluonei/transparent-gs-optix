@@ -35,5 +35,6 @@ bool LoadBool(const resource::xml::Object *obj, std::string_view param_name, boo
 
 bool LoadTransform3D(const resource::xml::Object *obj, util::Transform *transform) noexcept;
 bool LoadTransform(const resource::xml::Object *obj, void *dst) noexcept;
+bool LoadTransform(const resource::xml::Object *obj, void *dst, float* translate, float* rotate, float* scale) noexcept;
 }// namespace xml
 }// namespace Pupil::resource

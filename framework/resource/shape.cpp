@@ -151,6 +151,24 @@ struct ShapeLoader<EShapeType::_obj> {
 };
 
 template<>
+struct ShapeLoader<EShapeType::_ply> {
+    ShapeInstance operator()(const xml::Object *obj, Scene *scene) {
+        auto value = obj->GetProperty("filename");
+        auto path = (scene->scene_root_path / value).make_preferred();
+
+        ShapeInstance ins;
+        ins.name = obj->id;
+        ins.shape = util::Singleton<ShapeManager>::instance()->LoadMeshShape(path.string());
+
+        xml::LoadBool(obj, "face_normals", ins.shape->mesh.face_normals, false);
+        xml::LoadBool(obj, "flip_tex_coords", ins.shape->mesh.flip_tex_coords, true);
+        xml::LoadBool(obj, "flip_normals", ins.shape->mesh.flip_normals, false);
+
+        return ins;
+    }
+};
+
+template<>
 struct ShapeLoader<EShapeType::_hair> {
     ShapeInstance operator()(const xml::Object *obj, Scene *scene) {
         auto value = obj->GetProperty("filename");

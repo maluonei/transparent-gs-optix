@@ -26,7 +26,7 @@ struct Object;
 }
 
 #define PUPIL_SCENE_SHAPE \
-    obj, sphere, cube, rectangle, hair
+    obj, ply, sphere, cube, rectangle, hair
 
 PUPIL_ENUM_DEFINE(EShapeType, PUPIL_SCENE_SHAPE)
 PUPIL_ENUM_STRING_ARRAY(S_SHAPE_TYPE_NAME, PUPIL_SCENE_SHAPE)

@@ -18,6 +18,8 @@ struct Material {
         RoughConductor rough_conductor;
         Plastic plastic;
         RoughPlastic rough_plastic;
+        Refraction refraction;
+        //Reflection reflection;
     };
 
     struct LocalBsdf {
@@ -30,6 +32,7 @@ struct Material {
             RoughConductor::Local rough_conductor;
             Plastic::Local plastic;
             RoughPlastic::Local rough_plastic;
+            Refraction::Local refraction;
         };
 
         // #ifdef PUPIL_OPTIX
@@ -106,6 +109,8 @@ struct Material {
                     return plastic.diffuse_reflectance;
                 case EMatType::RoughPlastic:
                     return rough_plastic.diffuse_reflectance;
+                case EMatType::Refraction:
+                    return refraction.base_color;
             }
             return make_float3(0.f);
         }
@@ -146,6 +151,8 @@ struct Material {
                 return plastic.diffuse_reflectance.Sample(sampled_tex);
             case EMatType::RoughPlastic:
                 return rough_plastic.diffuse_reflectance.Sample(sampled_tex);
+            case EMatType::Refraction:
+                return refraction.base_color_texture.Sample(sampled_tex);
         }
         return make_float3(0.f);
     }

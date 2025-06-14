@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <format>
+#include <chrono>
 #include <condition_variable>
 
 namespace {
@@ -96,9 +97,168 @@ void System::Run() noexcept {
                 if (render_flag) {
                     std::unique_lock render_lock(m_render_system_mutex);
                     m_render_timer.Start();
-                    for (auto pass : m_passes) pass->Run();
+                    for (auto pass : m_passes) {
+                        
+                        pass->Run();
+                        //pass->SaveFrame();
+                    }
                     m_render_timer.Stop();
                     EventDispatcher<ESystemEvent::FrameFinished>(m_render_timer.ElapsedMilliseconds());
+                }
+            }
+            render_quit = true;
+            quit_cv.notify_all();
+        });
+
+    while (!quit_flag) {
+        if (m_gui_pass) m_gui_pass->Run();
+    }
+
+    std::unique_lock quit_lock(quit_cv_mtx);
+    quit_cv.wait(quit_lock, [&] { return render_quit; });
+}
+
+void System::Run_Once(const std::filesystem::path &path, const std::string &filename) noexcept {
+    m_system_run_flag = true;
+    if (m_scene_load_flag) {
+        EventDispatcher<ESystemEvent::Precompute>();
+        EventDispatcher<ESystemEvent::StartRendering>();
+    } else {
+        EventDispatcher<ESystemEvent::StopRendering>();
+    }
+
+    std::mutex quit_cv_mtx;
+    std::condition_variable quit_cv;
+    bool render_quit = false;
+    util::Singleton<util::ThreadPool>::instance()->AddTask(
+        [&]() {
+            while (!quit_flag) {
+                if (render_flag) {
+                    std::unique_lock render_lock(m_render_system_mutex);
+                    m_render_timer.Start();
+                    for (auto pass : m_passes) {
+                        auto start = std::chrono::high_resolution_clock::now();
+                        pass->Run();
+                        auto end = std::chrono::high_resolution_clock::now();
+                        std::chrono::duration<double> duration = end - start;
+                        std::cout << "函数运行时间: " << duration.count() << " 秒" << std::endl;
+                        //spdlog::info("函数运行时间:{0}", duration.count());
+                        //printf("函数运行时间. [ %f ] \n", duration.count());
+
+                        pass->SaveFrame(path, filename);    
+                    }
+                    quit_flag = true;
+                    m_render_timer.Stop();
+                    EventDispatcher<ESystemEvent::FrameFinished>(m_render_timer.ElapsedMilliseconds());
+                }
+            }
+            render_quit = true;
+            quit_cv.notify_all();
+        });
+
+    //while (!quit_flag) {
+    //    if (m_gui_pass) m_gui_pass->Run();
+    //}
+    //m_gui_pass->Run();
+
+    std::unique_lock quit_lock(quit_cv_mtx);
+    quit_cv.wait(quit_lock, [&] { return render_quit; });
+}
+
+void System::Run_Xmls(const std::filesystem::path path,
+                      const std::filesystem::path xml_folder_path,
+                      std::vector<std::string> pathes) noexcept {
+    m_system_run_flag = true;
+    if (m_scene_load_flag) {
+        EventDispatcher<ESystemEvent::Precompute>();
+        EventDispatcher<ESystemEvent::StartRendering>();
+    } else {
+        EventDispatcher<ESystemEvent::StopRendering>();
+    }
+
+    std::mutex quit_cv_mtx;
+    std::condition_variable quit_cv;
+    bool render_quit = false;
+
+    std::chrono::duration<double> total_render_time(0.0);
+
+    util::Singleton<util::ThreadPool>::instance()->AddTask(
+        [&]() {
+            int i = 0;
+            while (!quit_flag) {
+                if (render_flag) {
+                    ReSetCamera(xml_folder_path / (pathes[i] + ".xml"));
+
+                    std::unique_lock render_lock(m_render_system_mutex);
+                    m_render_timer.Start();
+                    for (auto pass : m_passes) {
+                        auto start = std::chrono::high_resolution_clock::now();
+                        pass->Run();
+                        auto end = std::chrono::high_resolution_clock::now();
+                        std::chrono::duration<double> duration = end - start;
+                        total_render_time += duration;
+                        //std::cout << "函数运行时间: " << duration.count() << " 秒" << std::endl;
+
+                        pass->SaveFrame(path, pathes[i]);
+                    }
+                    //quit_flag = true;
+                    m_render_timer.Stop();
+                    EventDispatcher<ESystemEvent::FrameFinished>(m_render_timer.ElapsedMilliseconds());
+                    
+                    i++;
+                    if (i >= pathes.size()) {
+                        quit_flag = true;
+                    }
+                }
+            }
+            render_quit = true;
+            quit_cv.notify_all();
+        });
+
+    while (!quit_flag) {
+        if (m_gui_pass) m_gui_pass->Run();
+    }
+
+    total_render_time /= 154.;
+    std::cout << "函数运行时间: " << total_render_time.count() << " 秒" << std::endl;
+
+    std::unique_lock quit_lock(quit_cv_mtx);
+    quit_cv.wait(quit_lock, [&] { return render_quit; });
+}
+
+void System::Run_Xmls2(const std::filesystem::path path) noexcept {
+    m_system_run_flag = true;
+    if (m_scene_load_flag) {
+        EventDispatcher<ESystemEvent::Precompute>();
+        EventDispatcher<ESystemEvent::StartRendering>();
+    } else {
+        EventDispatcher<ESystemEvent::StopRendering>();
+    }
+
+    std::mutex quit_cv_mtx;
+    std::condition_variable quit_cv;
+    bool render_quit = false;
+    util::Singleton<util::ThreadPool>::instance()->AddTask(
+        [&]() {
+            //int i = 0;
+            while (!quit_flag) {
+                if (render_flag) {
+                    ReSetCamera(path);
+
+                    std::unique_lock render_lock(m_render_system_mutex);
+                    m_render_timer.Start();
+                    for (auto pass : m_passes) {
+                        pass->Run();
+                        //pass->SaveFrame(path, pathes[i]);
+                    }
+                    //quit_flag = true;
+                    m_render_timer.Stop();
+                    EventDispatcher<ESystemEvent::FrameFinished>(m_render_timer.ElapsedMilliseconds());
+
+                    //i++;
+                    //if (i >= pathes.size()) {
+                    //    quit_flag = true;
+                    //}
                 }
             }
             render_quit = true;
@@ -171,4 +331,21 @@ void System::SetScene(std::filesystem::path scene_file_path) noexcept {
         EventDispatcher<ESystemEvent::StartRendering>();
     }
 }
+
+void System::ReSetCamera(std::filesystem::path scene_file_path) noexcept {
+    if (!std::filesystem::exists(scene_file_path)) {
+        Pupil::Log::Warn("scene file [{}] does not exist.", scene_file_path.string());
+        return;
+    }
+
+    {
+        auto world = util::Singleton<world::World>::instance();
+        //if (!world->LoadSensor(scene_file_path)) {
+        if (!world->ReSetCamera(scene_file_path)) {
+            Pupil::Log::Warn("camera load failed.");
+            return;
+        }
+    }
+}
+
 }// namespace Pupil

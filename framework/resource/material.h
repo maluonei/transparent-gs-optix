@@ -62,8 +62,11 @@ struct RoughPlastic {
     util::Texture specular_reflectance;
 };
 
-// struct PrincipledBSDF {
-// };
+struct Refraction {
+    float int_ior;
+    float ext_ior;
+    util::Texture base_color_texture;
+};
 
 struct Material {
     EMatType type = EMatType::Unknown;
@@ -77,6 +80,7 @@ struct Material {
         RoughConductor rough_conductor;
         Plastic plastic;
         RoughPlastic rough_plastic;
+        Refraction refraction;
     };
 
     Material() noexcept {}

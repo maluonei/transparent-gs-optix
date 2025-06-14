@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include "util/timer.h"
 
@@ -36,6 +37,7 @@ public:
     virtual void Inspector() noexcept;
 
     virtual void OnRun() noexcept = 0;
+    virtual void SaveFrame(const std::filesystem::path &path, const std::string& filename) noexcept;
 
     void Toggle() noexcept { m_enable ^= true; }
     void SetEnablility(bool enable) noexcept { m_enable = enable; }

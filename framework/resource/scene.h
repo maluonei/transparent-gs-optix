@@ -50,8 +50,11 @@ public:
     ~Scene() noexcept = default;
 
     void LoadXmlObj(const xml::Object *, void *) noexcept;
+    void LoadXmlCamera(const xml::Object *, void *, float *translation, float *rotation, float* scale) noexcept;
 
     void Reset() noexcept;
+    bool LoadSensorFromXML(std::filesystem::path) noexcept;
+    bool LoadCameraFromXML(std::filesystem::path, float *translation, float *rotation, float* scale) noexcept;
     bool LoadFromXML(std::filesystem::path) noexcept;
     bool LoadFromXML(std::string_view, std::string_view root = DATA_DIR) noexcept;
 };

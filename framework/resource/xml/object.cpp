@@ -23,6 +23,15 @@ void GlobalManager::ReplaceDefaultValue(pugi::xml_node *node) noexcept {
     }
 }
 
+bool Object::HasAttribute(std::string view) const noexcept {
+    for (auto &p : properties) {
+        if (p.name.compare(view) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::string Object::GetProperty(std::string_view property_name) const noexcept {
     for (auto &p : properties) {
         if (p.name.compare(property_name) == 0) {

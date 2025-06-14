@@ -10,6 +10,9 @@
 #include "util/camera.h"
 #include "resource/scene.h"
 
+#include "imgui.h"
+#include "ImGuizmo/ImGuizmo.h"
+
 namespace Pupil::world {
 void World::Init() noexcept {
     EventBinder<ECanvasEvent::MouseDragging>([this](void *p) {
@@ -71,6 +74,84 @@ void World::Destroy() noexcept {
     emitters.reset();
     m_ias_manager.reset();
     util::Singleton<world::GASManager>::instance()->Destroy();
+}
+
+bool World::ReSetCamera(std::filesystem::path scene_file_path) noexcept {
+    if (!std::filesystem::exists(scene_file_path)) {
+        Pupil::Log::Warn("scene file [{}] does not exist.", scene_file_path.string());
+        return false;
+    }
+
+    Pupil::Log::Info("start loading scene [{}].", scene_file_path.string());
+
+    Pupil::Timer timer;
+    timer.Start();
+
+    float translation[3] = { 0.f, 0.f, 0.f };
+    float rotation[3] = { 0.f, 0.f, 0.f };
+    float scale[3] = { 1.f, 1.f, 1.f };
+
+    if (!scene->LoadCameraFromXML(scene_file_path, translation, rotation, scale)) {
+        Pupil::Log::Error("Scene load failed: {}.", scene_file_path.string().c_str());
+        return false;
+    }
+    timer.Stop();
+
+    auto desc = camera->GetDesc();
+    auto transform = desc.to_world.matrix.GetTranspose();
+    ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, transform.e);
+    auto new_transform = transform.GetTranspose();
+    camera->SetWorldTransform(new_transform);
+    
+    EventDispatcher<EWorldEvent::CameraChange>();
+    return true;
+}
+
+bool World::LoadSensor(std::filesystem::path scene_file_path) noexcept {
+    if (!std::filesystem::exists(scene_file_path)) {
+        Pupil::Log::Warn("scene file [{}] does not exist.", scene_file_path.string());
+        return false;
+    }
+    
+    Pupil::Log::Info("start loading scene [{}].", scene_file_path.string());
+
+    Pupil::Timer timer;
+    timer.Start();
+    //m_ros.clear();
+    if (!scene->LoadSensorFromXML(scene_file_path) || !LoadSensor(scene.get())) {
+        Pupil::Log::Error("Scene load failed: {}.", scene_file_path.string().c_str());
+        return false;
+    }
+    timer.Stop();
+    //size_t tri_num = 0;
+    //for (auto &ro : m_ros) {
+    //    if (ro->geo.type == Pupil::optix::Geometry::EType::TriMesh) {
+    //        tri_num += ro->geo.tri_mesh.positions.GetNum() / 3;
+    //    }
+    //}
+    //Pupil::Log::Info("Scene triangles num: {}", tri_num);
+    //Pupil::Log::Info("Time consumed for scene loading: {:.3f}s", timer.ElapsedSeconds());
+
+    EventDispatcher<EWorldEvent::CameraChange>();
+    return true;
+
+}
+
+bool World::LoadSensor(resource::Scene *) noexcept {
+    if (scene == nullptr) return false;
+
+    auto &&sensor = scene->sensor;
+    auto camera_desc = util::CameraDesc{
+        .fov_y = sensor.fov,
+        .aspect_ratio = static_cast<float>(sensor.film.w) / sensor.film.h,
+        .near_clip = sensor.near_clip,
+        .far_clip = sensor.far_clip,
+        .to_world = sensor.transform
+    };
+
+    camera->Reset(camera_desc);
+
+    return true;
 }
 
 bool World::LoadScene(std::filesystem::path scene_file_path) noexcept {
@@ -144,6 +225,7 @@ bool World::LoadScene(resource::Scene *scene) noexcept {
     m_ias_manager->SetInstance(GetRenderobjects());
     return true;
 }
+
 
 OptixTraversableHandle World::GetIASHandle(unsigned int gas_offset, bool allow_update) noexcept {
     return m_ias_manager->GetIASHandle(gas_offset, allow_update);

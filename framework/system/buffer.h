@@ -52,6 +52,7 @@ public:
 
     [[nodiscard]] Buffer *GetBuffer(std::string_view) noexcept;
     Buffer *AllocBuffer(const BufferDesc &) noexcept;
+
     void AddBuffer(std::string_view id, std::unique_ptr<Buffer> &) noexcept;
 
     [[nodiscard]] const std::vector<std::string> &GetBufferNameList() const noexcept { return m_buffer_names; }
