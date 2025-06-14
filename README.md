@@ -1,4 +1,4 @@
-## PupilOptixLab
+## transparent-gs-optix
 
 This framework is originally developed by [mchenwang](https://github.com/mchenwang) for his research on ray tracing algorithms on GPU with Optix7, the original code is hosted on [PupilOptixLab](https://github.com/mchenwang/PupilOptixLab).
 
@@ -37,12 +37,12 @@ example/
 ```
 
 ## Usage
-First use cmake to generate the project files, then compile the project *path_tracer_glass_gbuffer* in the *example* directory.  
-![ProjectStructure](image/projects.png)
-
-In the *main.cpp* file, set the dataset path to the directory containing the xmls and models.
+1.First use cmake to generate the project files, then compile the project **path_tracer_glass_gbuffer** in the **example** directory.  
+![ProjectStructure](image/projects.png)  
+2.Copy xml files into the **xmls** directory and models into the **meshes** directory.  
+3.In the **main.cpp** file, set the dataset path to the directory containing the xmls and models.
 ```
 std::filesystem::path root_folder_path = "../../../data/static/dolphin32";  //write your dataset path
 ```
 
-Then run the project and the results will be saved in the *gbuffers* directory.
+4.Then run the project and the results will be saved in the **gbuffers** directory.
